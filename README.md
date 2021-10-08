@@ -2,11 +2,13 @@
 
 Jeu d'échecs en réseau.
 
-Langage: Java
+Langage: 
+
+- Java
 
 Bibliothèques: 
 
-- javafx, pour les interfaces graphiques
-- java sql, pour l'accès à la base de données Postgres
-- java nio, pour la communication en réseau
+- Javafx, pour les interfaces graphiques
+- Java sql, pour l'accès à la base de données Postgres
+- Java nio, pour la communication en réseau
                
