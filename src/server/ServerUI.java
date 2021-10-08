@@ -77,13 +77,13 @@ public class ServerUI extends Application implements EventHandler{
 
         stage.setTitle("Serveur de jeu");
         stage.show();
-
     }
 
     public static void main(String [] args){
         launch(args);
     }
 
-    public void handle(Event event){}
+    public void handle(Event event){
 
+    }
 }

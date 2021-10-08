@@ -3,6 +3,11 @@ package game;
 public class Pion {
     
     /**
+     * Id de la pièce
+     */
+    private int id;
+
+    /**
      * Type de pièce
      *   - R = roi
      *   - D = dame
@@ -16,8 +21,22 @@ public class Pion {
     /**
      * Joueur auquel appartient la pièce
      */
-    private String joueur;
+    private int joueur;
 
+    /**
+     * Coordonnées de la pièce sur le plateau
+     */
+    private int x;
+    private int y;
+
+    /**
+     * Retourne l'id de la pièce
+     * 
+     * @return int
+     */
+    public int getId(){
+        return this.id;
+    }
     /**
      * Retourne le type de la pièce
      * 
@@ -32,8 +51,44 @@ public class Pion {
      * 
      * @return String
      */
-    public String getJoueur(){
+    public int getJoueur(){
         return this.joueur;
+    }
+
+    /**
+     * Retourne la valeur de x
+     * 
+     * @return int
+     */
+    public int getX(){
+        return this.x;
+    }
+
+    /**
+     * Retourne la valeur de y
+     * 
+     * @return
+     */
+    public int getY(){
+        return this.y; 
+    }
+
+    /**
+     * Modifie la valeur de x
+     * 
+     * @param x
+     */
+    public void setX(int x){
+        this.x = x;
+    }
+
+    /**
+     * Modifie la valeur de y
+     * 
+     * @param y
+     */
+    public void setY(int y){
+        this.y = y;
     }
 
     /**
@@ -42,7 +97,8 @@ public class Pion {
      * @param type
      * @param joueur
      */
-    public Pion(char type, String joueur){
+    public Pion(int id, char type, int joueur){
+        this.id = id;
         this.type = type;
         this.joueur = joueur;
     }

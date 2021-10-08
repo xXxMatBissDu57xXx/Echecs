@@ -170,7 +170,7 @@ public class Server extends Thread{
                         //Configuration du logger et du FileHandler
                         logger = Logger.getLogger("MonLog");
                         try{
-                            fh = new FileHandler("C:/Users/Mathieu/Desktop/Devoirs/tp.final/TP-Final/logs/log.txt");
+                            fh = new FileHandler("C:/Users/Mathieu/Desktop/Devoirs/Echecs/logs/log.txt");
                             logger.addHandler(fh);
                             SimpleFormatter formatter = new SimpleFormatter();
                             fh.setFormatter(formatter);
@@ -243,6 +243,12 @@ public class Server extends Thread{
         return conn;
     }
 
+    /**
+     * Vérification des identifiants de l'utilisateur
+     * 
+     * @param pseudo
+     * @param mdp
+     */
     public void pg_login(String pseudo, String mdp){
 
         Connection conn = pg_connect();
