@@ -120,7 +120,7 @@ public class Server extends Thread{
             //Selection de l operation de reception de connexion, sur le selecteur
             ssc.register(selector, SelectionKey.OP_ACCEPT);
 
-            while (true){ 
+            while (interfaceServeur.getRunning()){ 
                 
                 //Recherche d une operation selectionnee sur le selecteur
                 selector.select();
@@ -143,7 +143,7 @@ public class Server extends Thread{
                         Platform.runLater(new Runnable(){
                             @Override
                             public void run(){
-                                //interfaceServeur.log("Connexion reçue depuis " + sc.socket().getRemoteSocketAddress() +".\n");
+                                interfaceServeur.log("Connexion reçue depuis " + sc.socket().getRemoteSocketAddress() +".\n");
                             }
                         });
 
@@ -211,17 +211,17 @@ public class Server extends Thread{
             }
 
             //Fermeture des ServerSocketChannel, SocketChannel et Selector
-            //this.sc.close();
-            //this.ssc.close();
-            //this.selector.wakeup();
-            //this.selector.close();
-            //interfaceServeur.stopServer();
-            //interfaceServeur.clearLog();
-            //this.interrupt();
+            this.sc.close();
+            this.ssc.close();
+            this.selector.wakeup();
+            this.selector.close();
+            interfaceServeur.stopServer();
+            interfaceServeur.clearLog();
+            this.interrupt();
 
         }catch(IOException | NullPointerException e){
             e.printStackTrace();
-            //interfaceServeur.clearLog();
+            interfaceServeur.clearLog();
         }
     }
         /**

@@ -1,5 +1,7 @@
 package server;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -10,8 +12,6 @@ import javafx.stage.Stage;
 
 /**
  * Interface graphique du serveur de jeu
- * 
- * @author xXxMatBissDu57xXx
  */
 
 public class ServerUI extends Application implements EventHandler{
@@ -34,9 +34,49 @@ public class ServerUI extends Application implements EventHandler{
     private  TextArea textArea;
     private Label statut;
 
-    //////////////////////////////////////////////////
+    /**
+     * Indique si le serveur tourne
+     */
+    private boolean running = false;
 
-    //////////////////////////////////////////////////
+    /**
+     * Le serveur
+     */
+    private Server server;
+
+    /**
+     * Retourne si le serveur tourne
+     * 
+     * @return boolean
+     */
+    public boolean getRunning(){
+        return running;
+    }
+
+    /**
+     * Ajoute un message dans la fenêtre de log
+     * 
+     * @param message
+     */
+    public void log(String message){
+        textArea.appendText(System.getProperty("line.separator") + message);
+    }
+
+    /**
+     * Vide la zone de log
+     */
+    public void clearLog(){
+        textArea.setText("");
+    }
+
+    /**
+     * Change le message de statut
+     * 
+     * @param message
+     */
+    public void setStatut(String message){
+        statut.setText(message);
+    }
 
     /**
      * Démarrage de l'UI
@@ -79,11 +119,74 @@ public class ServerUI extends Application implements EventHandler{
         stage.show();
     }
 
+    /**
+     * Démarre le serveur
+     * 
+     * @throws NumberFormatException
+     * @throws IOException
+     */
+    public void startServer() throws NumberFormatException, IOException{
+        running = true;
+        setRunningState();
+
+        server = new Server(this, ip.getText(), Integer.parseInt(port.getText()));
+        server.startServer();
+    }
+
+    /**
+     * Marque l'arrêt du serveur
+     */
+    public void stopServer(){
+        running = false;
+        setNonRunningState();
+
+        server.interrupt();
+    }
+
+    /**
+     * Met l'UI en état running
+     */
+    public void setRunningState(){
+        ip.setDisable(true);
+        port.setDisable(true);
+        run.setDisable(true);
+        stop.setDisable(false);
+        textArea.setDisable(false);
+    }
+
+    /**
+     * Met l'UI en état non-running
+     */
+    public void setNonRunningState(){
+        ip.setDisable(false);
+        port.setDisable(false);
+        run.setDisable(false);
+        stop.setDisable(true);
+        textArea.setDisable(true);
+    }
+
+    /**
+     * Lancement de l'application
+     * 
+     * @param args
+     */
     public static void main(String [] args){
         launch(args);
     }
 
+    /**
+     * Prise en charge des évènements
+     */
     public void handle(Event event){
-
+        if(event.getSource() == run){
+            try{
+                startServer();
+            }catch(NumberFormatException | IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+        else if (event.getSource() == stop){
+            stopServer();
+        }
     }
 }

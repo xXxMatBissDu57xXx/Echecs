@@ -1,5 +1,6 @@
 package client;
 
+import java.io.IOException;
 import java.util.Random;
 
 import javafx.application.Application;
@@ -11,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -18,8 +20,6 @@ import javafx.stage.Stage;
 
 /**
  * Interface graphique du client
- * 
- * @author xXxMatBissDu57xXx
  */
 public class ClientUI extends Application implements EventHandler{
 
@@ -41,7 +41,46 @@ public class ClientUI extends Application implements EventHandler{
      */
     private TextArea textArea;
     private TextField input;
-    private Label status;
+    private Label statut;
+
+    private boolean running = false;
+
+    //Le client
+    private Client client;
+
+    /**
+     * Retourne si le client tourne
+     * 
+     * @return boolean
+     */
+    public boolean getRunning(){
+        return running;
+    }
+
+    /**
+     * Ajout de message dans la zone de log
+     * 
+     * @param message
+     */
+    public void appendMessage(String message){
+        textArea.appendText(message);
+    }
+
+    /**
+     * Vide la zone de log
+     */
+    public void clearLog(){
+        textArea.setText("");
+    }
+
+    /**
+     * Change le message de statut
+     * 
+     * @param message
+     */
+    public void setStatut(String message){
+        statut.setText(message);
+    }
     
     /**
      * Démarrage de l'UI
@@ -74,19 +113,125 @@ public class ClientUI extends Application implements EventHandler{
 
         //Zone d'écriture et statut
         VBox bottomBox = new VBox();
-        status = new Label("Arrêté");
+        statut = new Label("Arrêté");
         input = new TextField();
         input.addEventFilter(KeyEvent.KEY_RELEASED, this);
-        bottomBox.getChildren().addAll(input, status);
+        bottomBox.getChildren().addAll(input, statut);
         borderPane.setBottom(bottomBox);
+
+        setDisconnectedState();
 
         stage.setTitle("Client de jeu");
         stage.show();
     }
 
+    /**
+     * Connexion au serveur
+     * 
+     * @throws NumberFormatException
+     * @throws IOException
+     */
+    public void connectToServer() throws NumberFormatException, IOException{
+        if(ip.getText().trim().length() == 0){
+            setStatut("Veuillez entrer une adresse ip valide");
+            return;
+        }
+        if(port.getText().trim().length() == 0){
+            setStatut("Veuillez entrer un port valide");
+            return;
+        }
+        if(pseudo.getText().trim().length() == 0){
+            setStatut("Veuillez entrer un pseudo valide");
+            return;
+        }
+        running = true;
+        setConnectedState();
+
+        client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), pseudo.getText());
+        client.startClient();
+    }
+
+    /**
+     * Déconnexion du serveur
+     */
+    public void disconnectFromServer(){
+        running = false;
+        setDisconnectedState();
+
+        this.clearLog();
+        this.setStatut("Prêt");
+
+        client.interrupt();
+    }
+
+    /**
+     * Met l'UI dans l'état running
+     */
+    public void setConnectedState(){
+        ip.setDisable(true);
+        port.setDisable(true);
+        pseudo.setDisable(true);
+        run.setDisable(true);
+        stop.setDisable(false);
+        input.setDisable(false);
+    }
+
+    /**
+     * Met l'UI dans l'état non-running
+     */
+    public void setDisconnectedState(){
+        ip.setDisable(false);
+        port.setDisable(false);
+        pseudo.setDisable(false);
+        run.setDisable(false);
+        stop.setDisable(true);
+        input.setDisable(true); 
+    }
+
+    /**
+     * Envoie un message si l'utilisateur appuie sur la touche entrée
+     * 
+     * @param event
+     * @throws IOException
+     */
+    public void processEnter(KeyEvent event) throws IOException{
+        if(event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0){
+            client.addMessage(input.getText() + System.getProperty("line.separator"));
+            input.setText("");
+        }
+    }
+
+    /**
+     * Lance l'application
+     * 
+     * @param args
+     */
     public static void main(String [] args){
         launch(args);
     }
 
-    public void handle(Event event){}
+    /**
+     * Prise en charge des évènements
+     * 
+     * @param event
+     */
+    public void handle(Event event){
+        if(event.getSource() == run){
+            try{
+                connectToServer();
+            }catch(NumberFormatException | IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+        if(event.getSource() == stop){
+            disconnectFromServer();
+        }
+        if(event.getSource() == input){
+            try{
+                processEnter((KeyEvent) event);
+            }catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+    }
 }
