@@ -1,6 +1,7 @@
 package client;
 
 import java.io.IOException;
+
 import java.util.Random;
 
 import javafx.application.Application;
@@ -127,11 +128,8 @@ public class ClientUI extends Application implements EventHandler{
 
     /**
      * Connexion au serveur
-     * 
-     * @throws NumberFormatException
-     * @throws IOException
      */
-    public void connectToServer() throws NumberFormatException, IOException{
+    public void connectToServer(){
         if(ip.getText().trim().length() == 0){
             setStatut("Veuillez entrer une adresse ip valide");
             return;
@@ -147,8 +145,12 @@ public class ClientUI extends Application implements EventHandler{
         running = true;
         setConnectedState();
 
-        client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), pseudo.getText());
-        client.startClient();
+        try{
+            client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), pseudo.getText());
+            client.startClient();
+        }catch(NumberFormatException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
@@ -158,8 +160,8 @@ public class ClientUI extends Application implements EventHandler{
         running = false;
         setDisconnectedState();
 
-        this.clearLog();
-        this.setStatut("Prêt");
+        clearLog();
+        setStatut("Prêt");
 
         client.interrupt();
     }
@@ -192,12 +194,15 @@ public class ClientUI extends Application implements EventHandler{
      * Envoie un message si l'utilisateur appuie sur la touche entrée
      * 
      * @param event
-     * @throws IOException
      */
-    public void processEnter(KeyEvent event) throws IOException{
-        if(event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0){
-            client.addMessage(input.getText() + System.getProperty("line.separator"));
-            input.setText("");
+    public void processEnter(KeyEvent event){
+        try{
+            if(event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0){
+                client.addMessage(input.getText() + System.getProperty("line.separator"));
+                input.setText("");
+            }
+        }catch(IOException e){
+            System.out.println(e.getMessage());
         }
     }
 
@@ -217,21 +222,13 @@ public class ClientUI extends Application implements EventHandler{
      */
     public void handle(Event event){
         if(event.getSource() == run){
-            try{
-                connectToServer();
-            }catch(NumberFormatException | IOException e){
-                System.out.println(e.getMessage());
-            }
+            connectToServer();
         }
         if(event.getSource() == stop){
             disconnectFromServer();
         }
         if(event.getSource() == input){
-            try{
-                processEnter((KeyEvent) event);
-            }catch(IOException e){
-                System.out.println(e.getMessage());
-            }
+            processEnter((KeyEvent) event);
         }
     }
 }

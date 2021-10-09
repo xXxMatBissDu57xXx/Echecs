@@ -8,6 +8,7 @@ public class Plateau {
      * Plateau de jeu
      */
     private Pion [][] plateau;
+    private int [][] plateau_fantome;
 
     /**
      * Listes des pièces de chaque joueur
@@ -126,148 +127,147 @@ public class Plateau {
                 this.plateau[i][j] = new Pion(99, 'F', 0);
             }
         }
+
+        //Initialisation du plateau fantôme
+        //Il est utilisé pour marquer les cases accessibles par les différentes pièces
+        this.plateau_fantome = new int [8][8];
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
+                this.plateau_fantome[i][j] = 0;
+            }
+        }
     }
 
     /**
-     * Déplace une pièce sur le plateau
+     * Indique sur quelles cases une pièce peut se déplacer
      * 
      * @param pion
-     * @param x
-     * @param y
+     * @param plateau
+     * @param plateau_fantome
+     * @return int [][]
      */
-    public void deplacable(Pion pion){
+    public int [][] deplacable(Pion pion, Pion [][] plateau, int [][] plateau_fantome){
 
+        //Réinitialisation du plateau fantôme
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
+                this.plateau_fantome[i][j] = 0;
+            }
+        }
+
+        //Pour un simple pion
         if(pion.getType() == 'P'){
 
             if(pion.getJoueur() == 1){
                 if(pion.getX() < 8){
-                    if((this.plateau[pion.getX() + 1][pion.getY()]).getJoueur() == 0){
+                    int x = pion.getX() + 1;
+                    int y = pion.getY();
+                    if((plateau[x][y]).getJoueur() != pion.getJoueur()){
                         //déplaçable
-                    }
-                    else if((this.plateau[pion.getX() + 1][pion.getY()]).getJoueur() != 1){
-                        //mangeable
+                        plateau_fantome[x][y] = 1;
                     }
                 }
             }
 
             else if(pion.getJoueur() == 2){
                 if(pion.getX() >= 0){
-                    if(this.plateau[pion.getX() - 1][pion.getY()].getJoueur() == 0){
+                    int x = pion.getX() - 1;
+                    int y = pion.getY();
+                    if(plateau[x][y].getJoueur() != pion.getJoueur()){
                         //déplaçable
-                    }
-                    else if((this.plateau[pion.getX() - 1][pion.getY()]).getJoueur() != 2){
-                        //mangeable
+                        plateau_fantome[x][y] = 1;
                     }
                 }
             }
         }
 
+        //Pour une tour
         else if(pion.getType() == 'T'){
 
             for(int i = 0; i < 8; i++){
-                if(this.plateau[i][pion.getY()].getJoueur() == 0){
+                if(plateau[i][pion.getY()].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][pion.getY()].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][pion.getY()] = 1;
                 }
             }
 
             for(int j = 0; j < 8; j++){
-                if(this.plateau[pion.getX()][j].getJoueur() == 0){
+                if(plateau[pion.getX()][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX()][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX()][j] = 1;
                 }
             }
         }
 
+        //Pour un cavalier
         else if(pion.getType() == 'C'){
     
             if(pion.getX() < 6 && pion.getY() < 7){
-                if(this.plateau[pion.getX() + 2][pion.getY() + 1].getJoueur() == 0){
+                if(plateau[pion.getX() + 2][pion.getY() + 1].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() + 2][pion.getY() + 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() + 2][pion.getY() + 1] = 1;
                 }
             }
 
             if(pion.getX() < 6 && pion.getY() > 0){
-                if(this.plateau[pion.getX() + 2][pion.getY() - 1].getJoueur() == 0){
+                if(plateau[pion.getX() + 2][pion.getY() - 1].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() + 2][pion.getY() - 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() + 2][pion.getY() - 1] = 1;
                 }
             }
 
             if(pion.getX() > 1 && pion.getY() < 7){
-                if(this.plateau[pion.getX() - 2][pion.getY() + 1].getJoueur() == 0){
+                if(plateau[pion.getX() - 2][pion.getY() + 1].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() - 2][pion.getY() + 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() - 2][pion.getY() + 1] = 1;
                 }
             }
 
             if(pion.getX() > 1 && pion.getY() > 0){
-                if(this.plateau[pion.getX() - 2][pion.getY() - 1].getJoueur() == 0){
+                if(plateau[pion.getX() - 2][pion.getY() - 1].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() - 2][pion.getY() - 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() - 2][pion.getY() - 1] = 1;
                 }
             }
 
             if(pion.getX() < 7 && pion.getY() < 6){
-                if(this.plateau[pion.getX() + 1][pion.getY() + 2].getJoueur() == 0){
+                if(plateau[pion.getX() + 1][pion.getY() + 2].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() + 1][pion.getY() + 2].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() + 1][pion.getY() + 2] = 1;
                 }
             }
 
             if(pion.getX() < 7 && pion.getY() > 1){
-                if(this.plateau[pion.getX() + 1][pion.getY() - 2].getJoueur() == 0){
+                if(plateau[pion.getX() + 1][pion.getY() - 2].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() + 1][pion.getY() - 2].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() + 1][pion.getY() - 2] = 1;
                 }
             }
 
             if(pion.getX() > 0 && pion.getY() < 6){
-                if(this.plateau[pion.getX() - 1][pion.getY() + 2].getJoueur() == 0){
+                if(plateau[pion.getX() - 1][pion.getY() + 2].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() - 1][pion.getY() + 2].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() - 1][pion.getY() + 2] = 1;
                 }
             }
 
             if(pion.getX() > 0 && pion.getY() > 1){
-                if(this.plateau[pion.getX() - 1][pion.getY() - 2].getJoueur() == 0){
+                if(plateau[pion.getX() - 1][pion.getY() - 2].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX() - 1][pion.getY() - 2].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX() - 1][pion.getY() - 2] = 1;
                 }
             }
         }
 
+        //Pour un fou
         else if(pion.getType() == 'F'){
 
             int i = pion.getX() + 1;
             int j = pion.getY() + 1;
             while(i < 8 && j < 8){
-                if(this.plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i++;
                 j++;
@@ -276,11 +276,9 @@ public class Plateau {
             i = pion.getX() + 1;
             j = pion.getY() - 1;
             while(i < 8 && j >= 0){
-                if(this.plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i++;
                 j--;
@@ -289,11 +287,9 @@ public class Plateau {
             i = pion.getX() - 1;
             j = pion.getY() + 1;
             while(i >= 0 && j < 8){
-                if(plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i--;
                 j++;
@@ -302,45 +298,37 @@ public class Plateau {
             i = pion.getX() - 1;
             j = pion.getY() - 1;
             while(i >= 0 && j >= 0){
-                if(plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i--;
                 j--;
             }
         }
 
+        //Pour une dame
         else if(pion.getType() == 'D'){
             
             for(int i = 0; i < 8; i++){
-                if(this.plateau[i][pion.getY()].getJoueur() == 0){
+                if(plateau[i][pion.getY()].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][pion.getY()].getJoueur() != pion.getJoueur()){
-                    //mangeable
-                }
+                    plateau_fantome[i][pion.getY()] = 1;                }
             }
 
             for(int j = 0; j < 8; j++){
-                if(this.plateau[pion.getX()][j].getJoueur() == 0){
+                if(plateau[pion.getX()][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[pion.getX()][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[pion.getX()][j] = 1;
                 }
             }
 
             int i = pion.getX() + 1;
             int j = pion.getY() + 1;
             while(i < 8 && j < 8){
-                if(this.plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i++;
                 j++;
@@ -349,11 +337,9 @@ public class Plateau {
             i = pion.getX() + 1;
             j = pion.getY() - 1;
             while(i < 8 && j >= 0){
-                if(this.plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(this.plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i++;
                 j--;
@@ -362,11 +348,9 @@ public class Plateau {
             i = pion.getX() - 1;
             j = pion.getY() + 1;
             while(i >= 0 && j < 8){
-                if(plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i--;
                 j++;
@@ -375,103 +359,105 @@ public class Plateau {
             i = pion.getX() - 1;
             j = pion.getY() - 1;
             while(i >= 0 && j >= 0){
-                if(plateau[i][j].getJoueur() == 0){
+                if(plateau[i][j].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[i][j].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[i][j] = 1;
                 }
                 i--;
                 j--;
             }
         }
 
+        //Pour un roi 
         else if(pion.getType() == 'R'){
 
             if(pion.getY() < 7){
-                if(plateau[pion.getX()][pion.getY() + 1].getJoueur() == 0){
+                int x = pion.getX();
+                int y = pion.getY() + 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX()][pion.getY() + 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getY() > 0){
-                if(plateau[pion.getX()][pion.getY() - 1].getJoueur() == 0){
+                int x = pion.getX();
+                int y = pion.getY() - 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX()][pion.getY() - 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() < 7){
-                if(plateau[pion.getX() + 1][pion.getY()].getJoueur() == 0){
+                int x = pion.getX() + 1;
+                int y = pion.getY();
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() + 1][pion.getY()].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() < 7 && pion.getY() < 7){
-                if(plateau[pion.getX() + 1][pion.getY() + 1].getJoueur() == 0){
+                int x = pion.getX() + 1;
+                int y = pion.getY() + 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() + 1][pion.getY() + 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() < 7 && pion.getY() > 0){
-                if(plateau[pion.getX() + 1][pion.getY() - 1].getJoueur() == 0){
+                int x = pion.getX() + 1;
+                int y = pion.getY() - 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() + 1][pion.getY() - 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() > 0){
-                if(plateau[pion.getX() - 1][pion.getY()].getJoueur() == 0){
+                int x = pion.getX() - 1;
+                int y = pion.getY();
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() - 1][pion.getY()].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() > 0 && pion.getY() < 7){
-                if(plateau[pion.getX() - 1][pion.getY() + 1].getJoueur() == 0){
+                int x = pion.getX() - 1;
+                int y = pion.getY() + 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() - 1][pion.getY() + 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
 
             if(pion.getX() > 0 && pion.getY() > 0){
-                if(plateau[pion.getX() - 1][pion.getY() - 1].getJoueur() == 0){
+                int x = pion.getX() - 1;
+                int y = pion.getY() - 1;
+                if(plateau[x][y].getJoueur() != pion.getJoueur()){
                     //déplaçable
-                }
-                else if(plateau[pion.getX() - 1][pion.getY() - 1].getJoueur() != pion.getJoueur()){
-                    //mangeable
+                    plateau_fantome[x][y] = 1;
                 }
             }
         }
+        return plateau_fantome;
     }
 
     /**
      * Supprime une pièce du plateau
      * 
      * @param pion
+     * @param plateau
      * @param x
      * @param y
+     * @return Pion [][]
      */
-    public void manger(Pion pion, int x, int y){
+    public Pion [][] manger(Pion pion, Pion [][] plateau, int x, int y){
 
-        this.plateau[x][y] = new Pion(99, 'F', 99);
+        plateau[x][y] = new Pion(99, 'F', 99);
 
         if(pion.getJoueur() == 1){
             liste_pions_perdus1.add(pion);
@@ -481,5 +467,102 @@ public class Plateau {
             liste_pions_perdus2.add(pion);
             liste_pions2[pion.getId()] = new Pion(99, 'F', 99);
         }
-    } 
+        return plateau;
+    }
+
+    /**
+     * Vérifie si un joueur est en "échec et math"
+     * 
+     * @param plateau
+     * @param plateau_fantome
+     * @param liste_pions
+     * @return boolean
+     */
+    public boolean checkVictory(Pion [][] plateau, int [][] plateau_fantome, Pion [] liste_pions){
+
+        //Plateau temporaire utilisé comme relais pour le plateau fantôme
+        int [][] plateau_tmp = new int [8][8];
+
+        //Réinitialisation du plateau fantôme
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
+                plateau_fantome[i][j] = 0;
+            }
+        }
+
+        //Vérification de la portée de chaque pièce
+        for (Pion pion : liste_pions) {
+            plateau_tmp = deplacable(pion, plateau, plateau_fantome);
+            for(int i = 0; i < 8; i++){
+                for(int j = 0; j < 8; j++){
+                    if(plateau_tmp[i][j] == 1){
+                        plateau_fantome[i][j] = 1;
+                    }
+                }
+            }
+        }
+
+        //Récupération du roi adverse
+        Pion roi = null;
+        if(liste_pions[0].getJoueur() == 1){
+            for (Pion pion : this.liste_pions2) {
+                if(pion.getType() == 'R'){
+                    roi = pion;
+                    continue;
+                }
+            }
+        }
+        else if(liste_pions[0].getJoueur() == 2){
+            for (Pion pion : this.liste_pions1) {
+                if(pion.getType() == 'R'){
+                    roi = pion;
+                    continue;
+                }
+            }
+        }
+
+        //Vérification des mouvements possibles du roi adverse
+        if(roi.getY() < 7){
+            if(plateau_fantome[roi.getX()][roi.getY() + 1] == 0){
+                return false;
+            }
+        }
+        if(roi.getY() > 0){
+            if(plateau_fantome[roi.getX()][roi.getY() - 1] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() < 7){
+            if(plateau_fantome[roi.getX() + 1][roi.getY()] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() < 7 && roi.getY() < 7){
+            if(plateau_fantome[roi.getX() + 1][roi.getY() + 1] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() < 7 && roi.getY() > 0){
+            if(plateau_fantome[roi.getX() + 1][roi.getY() - 1] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() > 0){
+            if(plateau_fantome[roi.getX() - 1][roi.getY()] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() > 0 && roi.getY() < 7){
+            if(plateau_fantome[roi.getX() - 1][roi.getY() + 1] == 0){
+                return false;
+            }
+        }
+        if(roi.getX() > 0 && roi.getY() > 0){
+            if(plateau_fantome[roi.getX() - 1][roi.getY() - 1] == 0){
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

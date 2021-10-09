@@ -104,7 +104,7 @@ public class Client extends Thread{
             while(interfaceClient.getRunning()){
 
                 //Recherche d une operation selectionnee sur le selecteur
-                selector.select();
+                selector.selectNow();
 
                 //Creation de liste d operations selectionnees
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -179,6 +179,7 @@ public class Client extends Thread{
             this.selector.wakeup();
             this.selector.close();
             interfaceClient.setDisconnectedState();
+            System.out.println("Arrêt client");
             this.interrupt();
 
         }catch(IOException e){

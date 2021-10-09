@@ -115,7 +115,9 @@ public class Server extends Thread{
             //Affectation de l adresse et du port du serveur
             try{
                 ssc.bind(new InetSocketAddress(ip, port));
-            }catch(BindException e){;}
+            }catch(BindException e){
+                System.out.println(e.getMessage());
+            }
             
             //Selection de l operation de reception de connexion, sur le selecteur
             ssc.register(selector, SelectionKey.OP_ACCEPT);
@@ -123,7 +125,7 @@ public class Server extends Thread{
             while (interfaceServeur.getRunning()){ 
                 
                 //Recherche d une operation selectionnee sur le selecteur
-                selector.select();
+                selector.selectNow();
 
                 //Creation de liste d operations selectionnees
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -217,6 +219,7 @@ public class Server extends Thread{
             this.selector.close();
             interfaceServeur.stopServer();
             interfaceServeur.clearLog();
+            System.out.println("Arrêt serveur");
             this.interrupt();
 
         }catch(IOException | NullPointerException e){

@@ -121,20 +121,22 @@ public class ServerUI extends Application implements EventHandler{
 
     /**
      * Démarre le serveur
-     * 
-     * @throws NumberFormatException
-     * @throws IOException
      */
-    public void startServer() throws NumberFormatException, IOException{
+    public void startServer(){
         running = true;
         setRunningState();
+        setStatut("En marche");
 
-        server = new Server(this, ip.getText(), Integer.parseInt(port.getText()));
-        server.startServer();
+        try{
+            server = new Server(this, ip.getText(), Integer.parseInt(port.getText()));
+            server.startServer();
+        }catch(NumberFormatException | IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
-     * Marque l'arrêt du serveur
+     * Arrête le serveur
      */
     public void stopServer(){
         running = false;
@@ -179,13 +181,9 @@ public class ServerUI extends Application implements EventHandler{
      */
     public void handle(Event event){
         if(event.getSource() == run){
-            try{
-                startServer();
-            }catch(NumberFormatException | IOException e){
-                System.out.println(e.getMessage());
-            }
+            startServer();
         }
-        else if (event.getSource() == stop){
+        if (event.getSource() == stop){
             stopServer();
         }
     }
