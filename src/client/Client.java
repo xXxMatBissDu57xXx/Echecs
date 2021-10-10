@@ -3,7 +3,7 @@ package client;
 import javafx.application.Platform;
 
 import java.io.IOException;
-
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 
 import java.nio.ByteBuffer;
@@ -25,6 +25,7 @@ public class Client extends Thread{
     private String ip;
     private int port;
     private String name;
+    private String mdp;
     private ClientUI interfaceClient;
 
     /**
@@ -54,11 +55,13 @@ public class Client extends Thread{
      * @param ip
      * @param port
      * @param name
+     * @param mdp
      */
-    public Client(ClientUI interfaceClient, String ip, int port, String name){
+    public Client(ClientUI interfaceClient, String ip, int port, String name, String mdp){
         this.ip = ip;
         this.port = port;
         this.name = name;
+        this.mdp = mdp;
         this.interfaceClient = interfaceClient;   
     }
     /**
@@ -80,7 +83,7 @@ public class Client extends Thread{
      * Demarre un thread Client afin de ne pas bloquer l'interface client
      */
     public void startClient(){
-        tc = new Client(interfaceClient, ip, port, name);
+        tc = new Client(interfaceClient, ip, port, name, mdp);
         tc.start();
     }
 
@@ -101,6 +104,8 @@ public class Client extends Thread{
             //Tentative de connexion a un ServerSocketChannel
             sc.connect(new InetSocketAddress(ip, port));
 
+            int cpt = 0;
+
             while(interfaceClient.getRunning()){
 
                 //Recherche d une operation selectionnee sur le selecteur
@@ -117,22 +122,10 @@ public class Client extends Thread{
 
                         //Validation de la connexion 
                         sc.finishConnect();
+                        System.out.println("finish connect");
 
-                        //Envoi du nom de l'utilisateur au serveur
-                        String message = name +" vient de se connecter !\n";
-                        buffer=ByteBuffer.wrap(message.getBytes());
-                        sc.write(buffer);
-
-                        //Mise a jour de l interface client en temps reel
-                        Platform.runLater(new Runnable(){
-                            @Override
-                            public void run(){
-                                interfaceClient.setStatut("Connecté.");
-                                interfaceClient.clearLog();
-                            }
-                        });
                         //Selection de l operation d ecriture dans le channel, sur le selecteur
-                        sc.register(selector, SelectionKey.OP_WRITE);
+                        sc.register(selector, SelectionKey.OP_READ);
                     }
 
                     //Si un message a ete ecrit dans le channel
@@ -141,24 +134,75 @@ public class Client extends Thread{
                         //Recuperation du channel
                         SocketChannel sc = (SocketChannel) key.channel();
 
-                        //Lecture du channel par un ByteBuffer, jusqu a ce qu il soit vide
-                        String message = "";
-                        while(sc.read(buffer) > 0){
-                            buffer.flip();
-                            for (int i = 0; i < buffer.limit(); i++){
-                                message += (char)buffer.get();
-                            }
-                            buffer.clear();
-                        }
-                        final String msg = message;
+                        String message = null;
+                        System.out.println(cpt);
 
-                        //Afficher le message lu dans l'interface client en temps reel
-                        Platform.runLater(new Runnable(){
-                            @Override
-                            public void run(){
-                                interfaceClient.appendMessage(msg);
+                        if(cpt > 0){
+                            //Envoi du nom de l'utilisateur au serveur
+                            message = name +" vient de se connecter !\n";
+                            buffer=ByteBuffer.wrap(message.getBytes());
+                            sc.write(buffer);
+
+                            //Mise a jour de l interface client en temps reel
+                            Platform.runLater(new Runnable(){
+                                @Override
+                                public void run(){
+                                    interfaceClient.setStatut("Connecté.");
+                                    interfaceClient.clearLog();
+                                }
+                            });
+                        }
+                        else if(cpt == 0){
+                            message = "&pseudo&";
+                            buffer = ByteBuffer.wrap(message.getBytes());
+                            sc.write(buffer);
+                            cpt ++;
+                        }
+                        else{
+
+                            //Lecture du channel par un ByteBuffer, jusqu a ce qu il soit vide
+                            while(sc.read(buffer) > 0){
+                                buffer.flip();
+                                for (int i = 0; i < buffer.limit(); i++){
+                                    message += (char)buffer.get();
+                                }
+                                buffer.clear();
                             }
-                        });
+
+                            if(message.equals("&pseudo&")){
+                                message = name;
+                                ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());    
+                                sc.write(buffer);   
+                            }
+    
+                            else if(message.equals("&mdp&")){
+                                message = mdp;
+                                ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());    
+                                sc.write(buffer); 
+                            }
+    
+                            else if(message.equals("&deco&")){
+                                Platform.runLater(new Runnable(){
+                                    @Override
+                                    public void run(){
+                                        interfaceClient.disconnectFromServer();
+                                    }
+                                });
+                            }
+
+                            //Afficher le message lu dans l'interface client en temps reel
+                            final String msg = message;
+                            Platform.runLater(new Runnable(){
+                                @Override
+                                public void run(){
+                                    interfaceClient.appendMessage(msg);
+                                }
+                            });
+
+                            sc.register(selector, SelectionKey.OP_WRITE);
+
+                        }
+
                     }
 
                     //Si le client a ecrit dans le channel
@@ -178,15 +222,19 @@ public class Client extends Thread{
             this.sc.close(); 
             this.selector.wakeup();
             this.selector.close();
-            interfaceClient.setDisconnectedState();
             System.out.println("Arrêt client");
             this.interrupt();
 
         }catch(IOException e){
-            e.printStackTrace();
-            interfaceClient.appendMessage("Echec de la connexion au serveur: "+ ip +":"+ port +".\n");
-            interfaceClient.setStatut("Prêt.");
-            interfaceClient.setDisconnectedState(); 
+            //e.printStackTrace();
+            Platform.runLater(new Runnable(){
+                @Override
+                public void run(){
+                    interfaceClient.appendMessage("Echec de la connexion au serveur: "+ ip +":"+ port +".\n");
+                    interfaceClient.setStatut("Prêt.");
+                    interfaceClient.setDisconnectedState();                 }
+            });
+
         }
     }
 }

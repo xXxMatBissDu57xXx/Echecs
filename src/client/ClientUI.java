@@ -24,12 +24,18 @@ import javafx.stage.Stage;
  */
 public class ClientUI extends Application implements EventHandler{
 
+    /**
+     * Barre haute pour l'affichage de zone d'entrées
+     */
+    private ToolBar toolBar = null;
+
      /**
      * Champs pour choisir l'ip, le port et le pseudo
      */
     private TextField ip;
     private TextField port;
     private TextField pseudo;
+    private TextField mdp;
 
     /**
      * Boutons d'action pour lancer ou arrêter le client 
@@ -97,15 +103,16 @@ public class ClientUI extends Application implements EventHandler{
         stage.setScene(scene);
 
         //Toolbar
-        ToolBar toolBar = new ToolBar();
+        toolBar = new ToolBar();
         ip = new TextField("127.0.0.1");
         port = new TextField("6699");
         pseudo = new TextField("user" + (new Random().nextInt(100)));
+        mdp = new TextField("");
         run = new Button("Se connecter");
         run.setOnAction(this);
         stop = new Button("Se déconnecter");
         stop.setOnAction(this);
-        toolBar.getItems().addAll(ip, port, pseudo, run, stop);
+        toolBar.getItems().addAll(pseudo, mdp, run);
         borderPane.setTop(toolBar);
 
         //Logger
@@ -118,9 +125,7 @@ public class ClientUI extends Application implements EventHandler{
         input = new TextField();
         input.addEventFilter(KeyEvent.KEY_RELEASED, this);
         bottomBox.getChildren().addAll(input, statut);
-        borderPane.setBottom(bottomBox);
-
-        setDisconnectedState();
+        borderPane.setBottom(bottomBox);  
 
         stage.setTitle("Client de jeu");
         stage.show();
@@ -146,7 +151,7 @@ public class ClientUI extends Application implements EventHandler{
         setConnectedState();
 
         try{
-            client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), pseudo.getText());
+            client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), pseudo.getText(), mdp.getText());
             client.startClient();
         }catch(NumberFormatException e){
             System.out.println(e.getMessage());
@@ -170,10 +175,13 @@ public class ClientUI extends Application implements EventHandler{
      * Met l'UI dans l'état running
      */
     public void setConnectedState(){
+        toolBar.getItems().add(stop);
+        toolBar.getItems().remove(run);
+
         ip.setDisable(true);
         port.setDisable(true);
         pseudo.setDisable(true);
-        run.setDisable(true);
+        mdp.setDisable(true);
         stop.setDisable(false);
         input.setDisable(false);
     }
@@ -182,11 +190,14 @@ public class ClientUI extends Application implements EventHandler{
      * Met l'UI dans l'état non-running
      */
     public void setDisconnectedState(){
+        toolBar.getItems().add(run);
+        toolBar.getItems().remove(stop);
+
         ip.setDisable(false);
         port.setDisable(false);
         pseudo.setDisable(false);
+        mdp.setDisable(false);
         run.setDisable(false);
-        stop.setDisable(true);
         input.setDisable(true); 
     }
 
