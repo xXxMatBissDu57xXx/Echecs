@@ -124,18 +124,15 @@ public class Server extends Thread{
             }catch(BindException e){
                 System.out.println(e.getMessage());
             }
-            
-            //Selection de l operation de reception de connexion, sur le selecteur
+
             ssc.register(selector, SelectionKey.OP_ACCEPT);
 
             int cpt = 0;
 
             while (interfaceServeur.getRunning()){ 
                 
-                //Recherche d une operation selectionnee sur le selecteur
                 selector.select();
 
-                //Creation de liste d operations selectionnees
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
                 while (iter.hasNext()) {
@@ -148,26 +145,22 @@ public class Server extends Thread{
                         sc = ssc.accept();
                         sc.configureBlocking(false);
 
-                        //Mise a jour de l interface serveur en temps reel
                         Platform.runLater(new Runnable(){
                             @Override
                             public void run(){
                                 interfaceServeur.log("Connexion reçue depuis " + sc.socket().getRemoteSocketAddress() +".\n");
                             }
                         });
-
-                        //Selection de l operation de lecture du channel, sur le selecteur
                         sc.register(selector, SelectionKey.OP_READ);
                     }
 
                     //Si un message a ete ecrit dans le channel
                     else if (key.isReadable()){
 
-                        //Recuperation du channel
-                        SocketChannel sc = (SocketChannel) key.channel();
+                        //SocketChannel sc = (SocketChannel) key.channel();
 
                         //Lecture du channel par un ByteBuffer, jusqu a ce qu il soit vide
-                        String message = null;
+                        String message = "";
                         while(sc.read(buffer) > 0){
                             buffer.flip();
                             for (int i = 0; i < buffer.limit(); i++){
@@ -175,53 +168,72 @@ public class Server extends Thread{
                             }
                             buffer.clear();
                         }
-                        System.out.println(message);
-                        System.out.println(cpt);
 
-                        if(message.equals("&pseudo&")){
+                        //Demande le pseudo au client
+                        if(message.equals("&pseudo&") && cpt == 0){
+                            System.out.println("message reçu: "+ message);
+                            message = "&pseudo&";
                             buffer = ByteBuffer.wrap(message.getBytes());
                             sc.write(buffer);
-                            cpt ++;
+                            System.out.println("message envoyé: "+ message);
+                            buffer.clear();
+                            cpt = 1;
                         }
 
                         //Enregistre le pseudo du client
                         else if(cpt == 1){
+                            System.out.println("message reçu: "+ message);
                             map_pseudo.put(sc, message);
+                            //System.out.println(map_pseudo.get(sc) + map_mdp.get(map_pseudo.get(sc)));
                             message = "&mdp&";
                             buffer = ByteBuffer.wrap(message.getBytes());
                             sc.write(buffer);
-                            cpt ++;
+                            System.out.println("message envoyé: "+ message);
+                            buffer.clear();
+                            cpt = 2;
                         }
 
                         //Enregistre le mot de passe du client
-                        if(cpt == 2){
+                        else if(cpt == 2){
+                            System.out.println("message reçu: "+ message);
                             map_mdp.put(map_pseudo.get(sc),message);
-                            if(pg_login(map_pseudo.get(sc), map_mdp.get(map_pseudo.get(sc)))){
+                            //System.out.println(map_pseudo.get(sc) + map_mdp.get(map_pseudo.get(sc)));
+                            if(! pg_login(map_pseudo.get(sc), map_mdp.get(map_pseudo.get(sc)))){
                                 message = "&deco&";
                                 buffer = ByteBuffer.wrap(message.getBytes());
                                 sc.write(buffer);
+                                System.out.println("message envoyé: "+ message);
+                                buffer.clear();
                             }
-                            cpt = 0;
+                            else{
+                                message = "&co&";
+                                buffer = ByteBuffer.wrap(message.getBytes());
+                                sc.write(buffer);
+                                System.out.println("message envoyé: "+ message);
+                                buffer.clear();  
+                            }
+                            cpt = 3;
                         }
 
-                        else{
+                        else if(cpt == 3){
 
                             //Configuration du logger et du FileHandler
                             //logger = Logger.getLogger("MonLog");
-                            try{
-                                fh = new FileHandler("C:/Users/Mathieu/Desktop/Devoirs/Echecs/logs/log.txt");
-                                logger.addHandler(fh);
-                                SimpleFormatter formatter = new SimpleFormatter();
-                                fh.setFormatter(formatter);
+                            //try{
+                                //fh = new FileHandler("C:/Users/Mathieu/Desktop/Devoirs/Echecs/logs/log.txt");
+                                //logger.addHandler(fh);
+                                //SimpleFormatter formatter = new SimpleFormatter();
+                                //fh.setFormatter(formatter);
 
                                 //Ajout du message de log
-                                logger.info(message);
+                                //logger.info(message);
 
-                            }catch(SecurityException | IOException e){
-                                System.out.println(e.getMessage());;
-                            }
+                            //}catch(SecurityException | IOException e){
+                                //System.out.println(e.getMessage());;
+                            //}
 
                             //Renvoie le message recu sur chaque channel connecte
+                            System.out.println("message reçu: "+ message);
                             buffer = ByteBuffer.wrap(message.getBytes());
                             for(SelectionKey sKey : selector.keys()){
                                 if(sKey.isValid() && sKey.channel() instanceof SocketChannel){
@@ -230,22 +242,17 @@ public class Server extends Thread{
                                     buffer.rewind();
                                 }
                             }
+                            buffer.clear();
+                            System.out.println("message envoyé: "+ message);
                         }
-
-                        //Selection de l operation d ecriture dans le channel, sur le selecteur
+                        //System.out.println(map_pseudo.get(sc) + map_mdp.get(map_pseudo.get(sc)));
                         sc.register(selector, SelectionKey.OP_WRITE);
-
-                        //Vider le buffer
-                        buffer.clear();
                     }
 
                     //Si le serveur a ecrit dans un channel
                     else if(key.isWritable()){
 
-                        //Recuperation du channel
                         SocketChannel sc = (SocketChannel) key.channel();
-
-                        //Selection de l operation de lecture du channel, sur le selecteur
                         sc.register(selector, SelectionKey.OP_READ);
                     }
                     iter.remove();
@@ -328,6 +335,7 @@ public class Server extends Thread{
                 System.out.println("Mauvais identifiant ou mot de passe.");
                 return false;
             }
+            System.out.println(pseudo +" est connecté !");
             return true;
 
         }catch(SQLException e){

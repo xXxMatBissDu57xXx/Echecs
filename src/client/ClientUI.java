@@ -147,6 +147,10 @@ public class ClientUI extends Application implements EventHandler{
             setStatut("Veuillez entrer un pseudo valide");
             return;
         }
+        if(mdp.getText().trim().length() == 0){
+            setStatut("Veuillez entrer un mot de passe valide");
+            return;
+        }
         running = true;
         setConnectedState();
 
