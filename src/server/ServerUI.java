@@ -17,6 +17,11 @@ import javafx.stage.Stage;
 public class ServerUI extends Application implements EventHandler{
 
     /**
+     * Barre haute d'affichage des zones d'entrées
+     */
+    ToolBar toolBar = null;
+
+    /**
      * Boutons d'action pour lancer ou arrêter le serveur
      */
     private Button run;
@@ -94,7 +99,7 @@ public class ServerUI extends Application implements EventHandler{
         stage.setHeight(600.0);
 
         //Toolbar
-        ToolBar toolBar = new ToolBar();
+        toolBar = new ToolBar();
         Label labelIp = new Label("IP : ");
         ip = new TextField("127.0.0.1");
         Label labelPort = new Label("Port : ");
@@ -103,7 +108,7 @@ public class ServerUI extends Application implements EventHandler{
         run.setOnAction(this);
         stop = new Button("Arrêter");
         stop.setOnAction(this);
-        toolBar.getItems().addAll(labelIp, ip, labelPort, port, run, stop);
+        toolBar.getItems().addAll(labelIp, ip, labelPort, port, run);
         borderPane.setTop(toolBar);
 
         //Logger
@@ -149,9 +154,11 @@ public class ServerUI extends Application implements EventHandler{
      * Met l'UI en état running
      */
     public void setRunningState(){
+        toolBar.getItems().add(stop);
+        toolBar.getItems().remove(run);
+
         ip.setDisable(true);
         port.setDisable(true);
-        run.setDisable(true);
         stop.setDisable(false);
         textArea.setDisable(false);
     }
@@ -160,10 +167,12 @@ public class ServerUI extends Application implements EventHandler{
      * Met l'UI en état non-running
      */
     public void setNonRunningState(){
+        toolBar.getItems().add(run);
+        toolBar.getItems().remove(stop);
+
         ip.setDisable(false);
         port.setDisable(false);
         run.setDisable(false);
-        stop.setDisable(true);
         textArea.setDisable(true);
     }
 
